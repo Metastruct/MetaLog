@@ -86,9 +86,9 @@ end
 
 -- central internal logging interface
 
-local function log (id, channel, level, message, ...)
+local function log (id, channel, level, ...)
 	for sinkName, sink in next, _metalogEnv.sinks do
-		local ok, err = pcall (sink, id, channel, level, message, ...)
+		local ok, err = pcall (sink, id, channel, level, ...)
 		if not ok then
 			_metalogEnv.sinks [sinkName] = nil
 			ml_console_printer ("MetaLog", "sinks", METALOG_LEVEL_WARN,
@@ -100,11 +100,18 @@ end
 
 -- per-level logging aliases
 
-local function logFatal (id, channel, message, ...) return log (id, channel, METALOG_LEVEL_FATAL, message, ...) end
-local function logError (id, channel, message, ...) return log (id, channel, METALOG_LEVEL_ERROR, message, ...) end
-local function logWarn  (id, channel, message, ...) return log (id, channel, METALOG_LEVEL_WARN,  message, ...) end
-local function logInfo  (id, channel, message, ...) return log (id, channel, METALOG_LEVEL_INFO,  message, ...) end
-local function logDebug (id, channel, message, ...) return log (id, channel, METALOG_LEVEL_DEBUG, message, ...) end
+local function logFatal (id, channel, ...) return log (id, channel, METALOG_LEVEL_FATAL, ...) end
+local function logError (id, channel, ...) return log (id, channel, METALOG_LEVEL_ERROR, ...) end
+local function logWarn  (id, channel, ...) return log (id, channel, METALOG_LEVEL_WARN,  ...) end
+local function logInfo  (id, channel, ...) return log (id, channel, METALOG_LEVEL_INFO,  ...) end
+local function logDebug (id, channel, ...) return log (id, channel, METALOG_LEVEL_DEBUG, ...) end
+
+local function logFormat      (id, channel, level, ...) return log      (id, channel, level, string.format (...)) end
+local function logFatalFormat (id, channel,        ...) return logFatal (id, channel,        string.format (...)) end
+local function logErrorFormat (id, channel,        ...) return logError (id, channel,        string.format (...)) end
+local function logWarnFormat  (id, channel,        ...) return logWarn  (id, channel,        string.format (...)) end
+local function logInfoFormat  (id, channel,        ...) return logInfo  (id, channel,        string.format (...)) end
+local function logDebugFormat (id, channel,        ...) return logDebug (id, channel,        string.format (...)) end
 
 -- OO / metatable things
 
@@ -116,6 +123,13 @@ local META_LOGGER = {
 		elseif key == 'warn'  then return function (logger, ...) return logWarn  (logger.id, logger.channel, ...) end
 		elseif key == 'info'  then return function (logger, ...) return logInfo  (logger.id, logger.channel, ...) end
 		elseif key == 'debug' then return function (logger, ...) return logDebug (logger.id, logger.channel, ...) end
+
+		elseif key == 'logFormat'   then return function (logger, ...) return logFormat      (logger.id, logger.channel, ...) end
+		elseif key == 'fatalFormat' then return function (logger, ...) return logFatalFormat (logger.id, logger.channel, ...) end
+		elseif key == 'errorFormat' then return function (logger, ...) return logErrorFormat (logger.id, logger.channel, ...) end
+		elseif key == 'warnFormat'  then return function (logger, ...) return logWarnFormat  (logger.id, logger.channel, ...) end
+		elseif key == 'infoFormat'  then return function (logger, ...) return logInfoFormat  (logger.id, logger.channel, ...) end
+		elseif key == 'debugFormat' then return function (logger, ...) return logDebugFormat (logger.id, logger.channel, ...) end
 		end
 	end
 }
@@ -146,6 +160,13 @@ metalog = setmetatable ({
 	warn  = logWarn,
 	info  = logInfo,
 	debug = logDebug,
+
+	logFormat   = logFormat,
+	fatalFormat = logFatalFormat,
+	errorFormat = logErrorFormat,
+	warnFormat  = logWarnFormat,
+	infoFormat  = logInfoFormat,
+	debugFormat = logDebugFormat,
 
 	getLevelName = getLevelName
 }, {
