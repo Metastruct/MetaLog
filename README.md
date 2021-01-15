@@ -1,9 +1,11 @@
 # MetaLog
-An extendable logger for Garry's Mod scripts.
+An extendable logging framework for Garry's Mod.
 
 ## (!!) Important Information
 **(/!\\) MetaLog is a work-in-progress script and the interface and usage information below can still change in the future.**  
 Therefore, usage is not yet recommended or you risk that future incompatible changes will break your scripts and you will have to update to accomodate for them.
+
+You can see the **v1.0 milestone** [here](https://github.com/Metastruct/MetaLog/milestone/1) and it lists the remaining known issues and TODOs before MetaLog can be considered a "finished" specification.
 
 ## End-User Usage / Project Scope / Intended Use:
 How to select which log levels to display, and where they end up appearing, will depend a lot on how MetaLog is used.  
@@ -11,7 +13,7 @@ MetaLog is purely intended to be a library or framework, the backbone providing 
 
 By default, MetaLog simply prints log messages to the console. You can change the log level cut-off using the `metalog_console_log_level` console variable.
 
-The default logger can be turned off or even removed and replaced with a more suited log display or handler. This should allow server/community owners to use MetaLog server-wide and direct the logging to wherever they think would me most helpful.  
+The default logger can be turned off or even removed and replaced with a more suited log display or handler. This should allow server/community owners to use MetaLog server-wide and direct the logging to wherever they think would be most helpful.  
 Examples include adding an additional Discord logging sink to send log messages to one or more Discord channels or to implement silly things such as making an NPC say all `info` log messages using text-to-speech.
 
 The possibilities are endless, really.
