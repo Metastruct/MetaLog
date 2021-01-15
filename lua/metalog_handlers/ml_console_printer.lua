@@ -33,7 +33,7 @@ local COLOR_CHANNEL           = COLOR_ID
 
 local COLOR_FATAL = Color (255,   0,   0)
 local COLOR_ERROR = Color (255, 100, 100)
-local COLOR_WARN  = Color (255,  50, 255)
+local COLOR_WARN  = Color (255, 255,  50)
 local COLOR_INFO  = Color (100, 100, 255)
 local COLOR_DEBUG = Color (255, 255, 255)
 
