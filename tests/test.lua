@@ -373,6 +373,19 @@ TestConsolePrinter = {}
 		lu.assertIs (after, default)
 	end
 
+	function TestConsolePrinter.testPrinting ()
+		local ml_console_printer = dofile ("lua/metalog_handlers/ml_console_printer.lua")
+
+		local old_print = print
+		local received = {}
+
+		print = function (...) received = {...} end
+		ml_console_printer ("test:id", nil, METALOG_LEVEL_INFO, "test message")
+		print = old_print
+
+		lu.assertItemsEquals (received, {"test message"})
+	end
+
 	function TestConsolePrinter.tearDown ()
 		_G.__CONSOLE_PRINTER_NONE = true
 		__MOCK_GMOD_RESET_CONVAR ("metalog_console_log_level")
