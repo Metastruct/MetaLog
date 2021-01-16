@@ -335,4 +335,47 @@ TestLoggingObject = {}
 	function TestLoggingObject.testInfoFormat  () return testCaseForLevelObjectFormat ("infoFormat",  METALOG_LEVEL_INFO)  end
 	function TestLoggingObject.testDebugFormat () return testCaseForLevelObjectFormat ("debugFormat", METALOG_LEVEL_DEBUG) end
 
+TestConsolePrinter = {}
+	function TestConsolePrinter.setUp ()
+		_G.__CONSOLE_PRINTER_NONE = false
+		__MOCK_GMOD_RESET_CONVAR ("metalog_console_log_level")
+	end
+
+	function TestConsolePrinter.testDefaultIsPreserved ()
+		local ml_console_printer = dofile ("lua/metalog_handlers/ml_console_printer.lua")
+		local before = CreateConVar ("metalog_console_log_level"):GetString ()
+		ml_console_printer ("test:id", nil, METALOG_LEVEL_DEBUG, "test message")
+		local after = CreateConVar ("metalog_console_log_level"):GetString ()
+
+		lu.assertIs (after, before)
+	end
+
+	function TestConsolePrinter.testValidValueIsPreserved ()
+		local ml_console_printer = dofile ("lua/metalog_handlers/ml_console_printer.lua")
+		local default = CreateConVar ("metalog_console_log_level"):GetString ()
+		CreateConVar ("metalog_console_log_level"):SetString ("warn")
+		local before = CreateConVar ("metalog_console_log_level"):GetString ()
+		lu.assertNotIs (before, default)
+
+		ml_console_printer ("test:id", nil, METALOG_LEVEL_DEBUG, "test message")
+		local after = CreateConVar ("metalog_console_log_level"):GetString ()
+
+		lu.assertIs (after, before)
+	end
+
+	function TestConsolePrinter.testInvalidValueIsResetToDefault ()
+		local ml_console_printer = dofile ("lua/metalog_handlers/ml_console_printer.lua")
+		local default = CreateConVar ("metalog_console_log_level"):GetString ()
+		CreateConVar ("metalog_console_log_level"):SetString ("ThisIsInvalid")
+		ml_console_printer ("test:id", nil, METALOG_LEVEL_DEBUG, "test message")
+		local after = CreateConVar ("metalog_console_log_level"):GetString ()
+
+		lu.assertIs (after, default)
+	end
+
+	function TestConsolePrinter.tearDown ()
+		_G.__CONSOLE_PRINTER_NONE = true
+		__MOCK_GMOD_RESET_CONVAR ("metalog_console_log_level")
+	end
+
 os.exit (lu.LuaUnit.run())

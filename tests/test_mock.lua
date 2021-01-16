@@ -1,8 +1,21 @@
+_G.__MOCK_GMOD_CONVARS = {}
+
+function _G.__MOCK_GMOD_RESET_CONVAR (id)
+	_G.__MOCK_GMOD_CONVARS [id] = nil
+end
+
+_G.__CONSOLE_PRINTER_NONE = true
+
 return {
-	CreateConVar = function (_, default)
+	CreateConVar = function (id, default)
+		_G.__MOCK_GMOD_CONVARS [id] = _G.__MOCK_GMOD_CONVARS [id] or default
 		return {
-			GetString = function()
-				return default
+			GetString = function ()
+				if _G.__CONSOLE_PRINTER_NONE then return "NONE" end
+				return _G.__MOCK_GMOD_CONVARS [id]
+			end,
+			SetString = function (_, newVal)
+				_G.__MOCK_GMOD_CONVARS [id] = newVal
 			end
 		}
 	end,

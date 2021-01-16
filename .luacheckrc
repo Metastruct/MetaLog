@@ -9,6 +9,7 @@ read_globals = {
 	"METALOG_LEVEL_DEBUG",
 	"metalog",
 	"include",
+	"CreateConVar",
 	table = {
 		fields = {
 			"Empty"
@@ -24,6 +25,16 @@ files ["tests/test_ext_table.lua"] = {
 				"Empty"
 			}
 		}
+	}
+}
+files ["tests/test_mock.lua"] = {
+	read_globals = {
+		"__MOCK_GMOD_RESET_CONVAR"
+	}
+}
+files ["tests/test.lua"] = {
+	read_globals = {
+		"__MOCK_GMOD_RESET_CONVAR"
 	}
 }
 files [".luacheckrc"] = {
