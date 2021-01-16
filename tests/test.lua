@@ -116,6 +116,48 @@ TestLoggingStatic = {}
 		metalog.unregisterLoggingSinks()
 	end
 
+	local function testCaseForLogStatic (testLevel, testChannel)
+		local received = {}
+		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
+			received = {id=id, channel=channel, level=level, ...}
+		end)
+
+		local payload = { math.random(), math.random() }
+
+		metalog.log ("test:id", testChannel, testLevel, table.unpack (payload))
+
+		lu.assertIs (received.id, "test:id")
+		lu.assertIs (received.channel, testChannel)
+		lu.assertIs (received.level, testLevel)
+		for i = 1, 2 do
+			lu.assertIs (received[i], payload[i])
+		end
+	end
+
+	function TestLoggingStatic.testLogFatal () return testCaseForLogStatic (METALOG_LEVEL_FATAL) end
+	function TestLoggingStatic.testLogError () return testCaseForLogStatic (METALOG_LEVEL_ERROR) end
+	function TestLoggingStatic.testLogWarn  () return testCaseForLogStatic (METALOG_LEVEL_WARN)  end
+	function TestLoggingStatic.testLogInfo  () return testCaseForLogStatic (METALOG_LEVEL_INFO)  end
+	function TestLoggingStatic.testLogDebug () return testCaseForLogStatic (METALOG_LEVEL_DEBUG) end
+
+	function TestLoggingStatic.testLogFatalChannel () return testCaseForLogStatic (METALOG_LEVEL_FATAL, "test_channel") end
+	function TestLoggingStatic.testLogErrorChannel () return testCaseForLogStatic (METALOG_LEVEL_ERROR, "test_channel") end
+	function TestLoggingStatic.testLogWarnChannel  () return testCaseForLogStatic (METALOG_LEVEL_WARN , "test_channel") end
+	function TestLoggingStatic.testLogInfoChannel  () return testCaseForLogStatic (METALOG_LEVEL_INFO , "test_channel") end
+	function TestLoggingStatic.testLogDebugChannel () return testCaseForLogStatic (METALOG_LEVEL_DEBUG, "test_channel") end
+
+	function TestLoggingStatic.testLogFatalInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStatic, NOT_A_STRING) end
+	function TestLoggingStatic.testLogErrorInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStatic, NOT_A_STRING) end
+	function TestLoggingStatic.testLogWarnInvalidLevel  () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStatic, NOT_A_STRING) end
+	function TestLoggingStatic.testLogInfoInvalidLevel  () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStatic, NOT_A_STRING) end
+	function TestLoggingStatic.testLogDebugInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStatic, NOT_A_STRING) end
+
+	function TestLoggingStatic.testLogFatalInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_FATAL, NOT_A_STRING) end
+	function TestLoggingStatic.testLogErrorInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_ERROR, NOT_A_STRING) end
+	function TestLoggingStatic.testLogWarnInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_WARN , NOT_A_STRING) end
+	function TestLoggingStatic.testLogInfoInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_INFO , NOT_A_STRING) end
+	function TestLoggingStatic.testLogDebugInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
+
 	local function testCaseForLevelStatic (func, expectedLevel, testChannel)
 		local received = {}
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
@@ -151,6 +193,48 @@ TestLoggingStatic = {}
 	function TestLoggingStatic.testWarnInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelStatic, metalog.warn,  METALOG_LEVEL_WARN,  NOT_A_STRING) end
 	function TestLoggingStatic.testInfoInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelStatic, metalog.info,  METALOG_LEVEL_INFO,  NOT_A_STRING) end
 	function TestLoggingStatic.testDebugInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelStatic, metalog.debug, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
+
+	local function testCaseForLogStaticFormat (testLevel, testChannel)
+		local received = {}
+		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
+			received = {id=id, channel=channel, level=level, ...}
+		end)
+
+		local payload = { math.random(), math.random(), "this one should be ignored" }
+
+		metalog.logFormat ("test:id", testChannel, testLevel, "random numbers: %f %f", table.unpack (payload))
+
+		lu.assertIs (received.id, "test:id")
+		lu.assertIs (received.channel, testChannel)
+		lu.assertIs (received.level, testLevel)
+		lu.assertIs (received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
+		lu.assertIsNil (received[2])
+		lu.assertIsNil (received[3])
+	end
+
+	function TestLoggingStatic.testLogFatalFormat () return testCaseForLogStaticFormat (METALOG_LEVEL_FATAL) end
+	function TestLoggingStatic.testLogErrorFormat () return testCaseForLogStaticFormat (METALOG_LEVEL_ERROR) end
+	function TestLoggingStatic.testLogWarnFormat  () return testCaseForLogStaticFormat (METALOG_LEVEL_WARN)  end
+	function TestLoggingStatic.testLogInfoFormat  () return testCaseForLogStaticFormat (METALOG_LEVEL_INFO)  end
+	function TestLoggingStatic.testLogDebugFormat () return testCaseForLogStaticFormat (METALOG_LEVEL_DEBUG) end
+
+	function TestLoggingStatic.testLogFatalFormatChannel () return testCaseForLogStaticFormat (METALOG_LEVEL_FATAL, "test_channel") end
+	function TestLoggingStatic.testLogErrorFormatChannel () return testCaseForLogStaticFormat (METALOG_LEVEL_ERROR, "test_channel") end
+	function TestLoggingStatic.testLogWarnFormatChannel  () return testCaseForLogStaticFormat (METALOG_LEVEL_WARN,  "test_channel") end
+	function TestLoggingStatic.testLogInfoFormatChannel  () return testCaseForLogStaticFormat (METALOG_LEVEL_INFO,  "test_channel") end
+	function TestLoggingStatic.testLogDebugFormatChannel () return testCaseForLogStaticFormat (METALOG_LEVEL_DEBUG, "test_channel") end
+
+	function TestLoggingStatic.testLogFatalFormatInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStaticFormat, NOT_A_STRING) end
+	function TestLoggingStatic.testLogErrorFormatInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStaticFormat, NOT_A_STRING) end
+	function TestLoggingStatic.testLogWarnFormatInvalidLevel  () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStaticFormat, NOT_A_STRING) end
+	function TestLoggingStatic.testLogInfoFormatInvalidLevel  () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStaticFormat, NOT_A_STRING) end
+	function TestLoggingStatic.testLogDebugFormatInvalidLevel () lu.assertErrorMsgContains ('Invalid level', testCaseForLogStaticFormat, NOT_A_STRING) end
+
+	function TestLoggingStatic.testLogFatalFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_FATAL, NOT_A_STRING) end
+	function TestLoggingStatic.testLogErrorFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_ERROR, NOT_A_STRING) end
+	function TestLoggingStatic.testLogWarnFormatInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_WARN,  NOT_A_STRING) end
+	function TestLoggingStatic.testLogInfoFormatInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_INFO,  NOT_A_STRING) end
+	function TestLoggingStatic.testLogDebugFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
 
 	local function testCaseForLevelStaticFormat (func, expectedLevel, testChannel)
 		local received = {}

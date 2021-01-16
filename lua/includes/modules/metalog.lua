@@ -27,6 +27,19 @@ local function assertType (name, var, expected_type, expected_type_print_overrid
 	end
 end
 
+local function assertLevel (level)
+	if type (level) ~= "number" or (
+		    level ~= METALOG_LEVEL_NONE
+		and level ~= METALOG_LEVEL_FATAL
+		and level ~= METALOG_LEVEL_ERROR
+		and level ~= METALOG_LEVEL_WARN
+		and level ~= METALOG_LEVEL_INFO
+		and level ~= METALOG_LEVEL_DEBUG
+	) then
+		return error (string.format ("Invalid level '%s'.", tostring (level)))
+	end
+end
+
 -- global shared environment used for storing settings and handlers
 
 local ml_console_printer = include ("metalog_handlers/ml_console_printer.lua")
@@ -96,6 +109,7 @@ local function log (id, channel, level, ...)
 	if channel ~= nil then
 		assertType ("channel", channel, "string", "optional string")
 	end
+	assertLevel (level)
 
 	for sinkName, sink in next, _metalogEnv.sinks do
 		local ok, err = pcall (sink, id, channel, level, ...)
