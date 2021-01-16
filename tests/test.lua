@@ -379,9 +379,9 @@ TestConsolePrinter = {}
 		local old_print = print
 		local received = {}
 
-		print = function (...) received = {...} end
+		print = function (...) received = {...} end -- luacheck: ignore
 		ml_console_printer ("test:id", nil, METALOG_LEVEL_INFO, "test message")
-		print = old_print
+		print = old_print -- luacheck: ignore
 
 		lu.assertItemsEquals (received, {"test message"})
 	end
