@@ -1,4 +1,4 @@
-name: Luacheck
+name: Linting
 
 on: [push, pull_request]
 
