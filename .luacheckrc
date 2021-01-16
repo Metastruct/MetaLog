@@ -29,3 +29,6 @@ files ["tests/test_ext_table.lua"] = {
 files [".luacheckrc"] = {
 	global = false
 }
+files [".luacov"] = {
+	global = false
+}
