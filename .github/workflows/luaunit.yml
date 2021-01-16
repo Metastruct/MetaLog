@@ -22,4 +22,4 @@ jobs:
     - name: Run unit tests
       run: |
         lua -lluacov ./tests/test.lua -v
-        luacov
+        luacov && cat luacov.report.out
