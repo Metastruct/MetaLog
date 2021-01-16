@@ -17,6 +17,9 @@ jobs:
       uses: leafo/gh-actions-luarocks@v4
     - name: Setup ‘luaunit’
       run: |
+        luarocks install cluacov
         luarocks install luaunit
     - name: Run unit tests
-      run: lua ./tests/test.lua
+      run: |
+        lua -lluacov ./tests/test.lua -v
+        luacov
