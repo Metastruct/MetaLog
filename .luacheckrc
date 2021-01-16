@@ -1,5 +1,5 @@
 allow_defined_top = true
-exclude_files = {".luarocks"}
+exclude_files = {".install"}
 read_globals = {
 	"METALOG_LEVEL_NONE",
 	"METALOG_LEVEL_FATAL",
