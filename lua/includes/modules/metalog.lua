@@ -40,7 +40,6 @@ _metalogEnv = _metalogEnv or {
 
 -- levels
 
---luacheck: globals METALOG_LEVEL_NONE METALOG_LEVEL_FATAL METALOG_LEVEL_ERROR METALOG_LEVEL_WARN METALOG_LEVEL_INFO METALOG_LEVEL_DEBUG, ignore
 METALOG_LEVEL_NONE  =   0
 METALOG_LEVEL_FATAL = 2^0
 METALOG_LEVEL_ERROR = 2^1
@@ -153,6 +152,10 @@ metalog = setmetatable ({
 	METALOG_LEVEL_WARN  = METALOG_LEVEL_WARN,
 	METALOG_LEVEL_INFO  = METALOG_LEVEL_INFO,
 	METALOG_LEVEL_DEBUG = METALOG_LEVEL_DEBUG,
+
+	registerLoggingSink    = registerLoggingSink,
+	unregisterLoggingSink  = unregisterLoggingSink,
+	unregisterLoggingSinks = unregisterLoggingSinks,
 
 	log   = log,
 	fatal = logFatal,

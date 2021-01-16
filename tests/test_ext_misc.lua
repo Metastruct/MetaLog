@@ -1,0 +1,3 @@
+return {
+	MsgC = function() end
+}
