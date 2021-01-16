@@ -62,6 +62,12 @@ end
 
 -- logging backend management
 
+local function getLoggingSink (name)
+	assertType ("name", name, "string")
+
+	return _metalogEnv.sinks and _metalogEnv.sinks [name]
+end
+
 local function registerLoggingSink (name, callback)
 	assertType ("name", name, "string")
 	assertType ("callback", callback, "function")
@@ -153,6 +159,7 @@ metalog = setmetatable ({
 	METALOG_LEVEL_INFO  = METALOG_LEVEL_INFO,
 	METALOG_LEVEL_DEBUG = METALOG_LEVEL_DEBUG,
 
+	getLoggingSink         = getLoggingSink,
 	registerLoggingSink    = registerLoggingSink,
 	unregisterLoggingSink  = unregisterLoggingSink,
 	unregisterLoggingSinks = unregisterLoggingSinks,

@@ -52,6 +52,60 @@ TestLevelInterface = {}
 		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_DEBUG), "debug")
 	end
 
+TestSinkInterface = {}
+	function TestSinkInterface.setUp ()
+		metalog.unregisterLoggingSinks()
+	end
+
+	function TestSinkInterface.testGetLoggingSink ()
+		local id = string.format ("Rnd%f", math.random())
+
+		lu.assertIsNil (metalog.getLoggingSink (id..1))
+		lu.assertIsNil (metalog.getLoggingSink (id..2))
+
+		local sink1, sink2 = function()end, function()end
+		metalog.registerLoggingSink (id..1, sink1)
+		metalog.registerLoggingSink (id..2, sink2)
+
+		lu.assertIs (metalog.getLoggingSink (id..1), sink1)
+		lu.assertIs (metalog.getLoggingSink (id..2), sink2)
+
+		metalog.unregisterLoggingSink (id..1)
+		lu.assertIsNil (metalog.getLoggingSink (id..1))
+		lu.assertIs (metalog.getLoggingSink (id..2), sink2)
+
+		metalog.unregisterLoggingSinks()
+		lu.assertIsNil (metalog.getLoggingSink (id..1))
+		lu.assertIsNil (metalog.getLoggingSink (id..2))
+	end
+
+	function TestSinkInterface.testErroringLoggingSink ()
+		lu.assertIsNil (metalog.getLoggingSink ("testing"))
+
+		local A, B
+
+		local callback_A   = function (id) A = id end
+		local callback_B   = function (id) B = id end
+		local callback_err = function () error ("ERROR_ALWAYS") end
+
+		metalog.registerLoggingSink ("testing1", callback_A)
+		metalog.registerLoggingSink ("testing2", callback_err)
+		metalog.registerLoggingSink ("testing3", callback_B)
+
+		lu.assertIs (metalog.getLoggingSink ("testing1"), callback_A)
+		lu.assertIs (metalog.getLoggingSink ("testing2"), callback_err)
+		lu.assertIs (metalog.getLoggingSink ("testing3"), callback_B)
+
+		metalog.debug ("example", nil, "An example log message.")
+
+		lu.assertIs    (metalog.getLoggingSink ("testing1"), callback_A)
+		lu.assertIsNil (metalog.getLoggingSink ("testing2"))
+		lu.assertIs    (metalog.getLoggingSink ("testing3"), callback_B)
+
+		lu.assertIs (A, "example")
+		lu.assertIs (B, "example")
+	end
+
 TestLoggingStatic = {}
 	function TestLoggingStatic.setUp ()
 		metalog.unregisterLoggingSinks()
@@ -67,11 +121,11 @@ TestLoggingStatic = {}
 
 		func ("test:id", nil, table.unpack (payload))
 
-		lu.assertIs(received.id, "test:id")
-		lu.assertIsNil(received.channel)
-		lu.assertIs(received.level, expectedLevel)
+		lu.assertIs (received.id, "test:id")
+		lu.assertIsNil (received.channel)
+		lu.assertIs (received.level, expectedLevel)
 		for i = 1, 2 do
-			lu.assertIs(received[i], payload[i])
+			lu.assertIs (received[i], payload[i])
 		end
 	end
 
@@ -101,12 +155,12 @@ TestLoggingStatic = {}
 
 		func ("test:id", nil, "random numbers: %f %f", table.unpack (payload))
 
-		lu.assertIs(received.id, "test:id")
-		lu.assertIsNil(received.channel)
-		lu.assertIs(received.level, expectedLevel)
-		lu.assertIs(received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
-		lu.assertIsNil(received[2])
-		lu.assertIsNil(received[3])
+		lu.assertIs (received.id, "test:id")
+		lu.assertIsNil (received.channel)
+		lu.assertIs (received.level, expectedLevel)
+		lu.assertIs (received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
+		lu.assertIsNil (received[2])
+		lu.assertIsNil (received[3])
 	end
 
 	function TestLoggingStatic.testFatalFormat ()
@@ -141,11 +195,11 @@ TestLoggingObject = {}
 		local logger = metalog ("test:id")
 		logger[method] (logger, table.unpack (payload))
 
-		lu.assertIs(received.id, "test:id")
-		lu.assertIsNil(received.channel)
-		lu.assertIs(received.level, expectedLevel)
+		lu.assertIs (received.id, "test:id")
+		lu.assertIsNil (received.channel)
+		lu.assertIs (received.level, expectedLevel)
 		for i = 1, 2 do
-			lu.assertIs(received[i], payload[i])
+			lu.assertIs (received[i], payload[i])
 		end
 	end
 
@@ -176,12 +230,12 @@ TestLoggingObject = {}
 		local logger = metalog ("test:id")
 		logger[method] (logger, "random numbers: %f %f", table.unpack (payload))
 
-		lu.assertIs(received.id, "test:id")
-		lu.assertIsNil(received.channel)
-		lu.assertIs(received.level, expectedLevel)
-		lu.assertIs(received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
-		lu.assertIsNil(received[2])
-		lu.assertIsNil(received[3])
+		lu.assertIs (received.id, "test:id")
+		lu.assertIsNil (received.channel)
+		lu.assertIs (received.level, expectedLevel)
+		lu.assertIs (received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
+		lu.assertIsNil (received[2])
+		lu.assertIsNil (received[3])
 	end
 
 	function TestLoggingObject.testFatalFormat ()
