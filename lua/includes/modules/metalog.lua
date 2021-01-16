@@ -92,6 +92,11 @@ end
 -- central internal logging interface
 
 local function log (id, channel, level, ...)
+	assertType ("id", id, "string")
+	if channel ~= nil then
+		assertType ("channel", channel, "string", "optional string")
+	end
+
 	for sinkName, sink in next, _metalogEnv.sinks do
 		local ok, err = pcall (sink, id, channel, level, ...)
 		if not ok then
