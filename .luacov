@@ -1,3 +1,4 @@
 include = {
-	"./lua"
+	"lua/includes",
+	"lua/metalog_handlers"
 }
