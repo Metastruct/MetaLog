@@ -1,5 +1,5 @@
 return {
-	CreateConVar = function (var, default)
+	CreateConVar = function (_, default)
 		return {
 			GetString = function()
 				return default

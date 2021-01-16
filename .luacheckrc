@@ -1,4 +1,5 @@
 allow_defined_top = true
+exclude_files = {".luarocks"}
 read_globals = {
 	"METALOG_LEVEL_NONE",
 	"METALOG_LEVEL_FATAL",
@@ -16,7 +17,7 @@ read_globals = {
 }
 max_line_length = false
 std = "lua53"
-files ["test_ext_table.lua"] = {
+files ["tests/test_ext_table.lua"] = {
 	globals = {
 		table = {
 			fields = {
