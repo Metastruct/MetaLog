@@ -61,12 +61,12 @@ METALOG_LEVEL_INFO  = 2^3
 METALOG_LEVEL_DEBUG = 2^4
 
 local levelNames = {
-	[  0] = "none",
-	[2^0] = "fatal",
-	[2^1] = "error",
-	[2^2] = "warn",
-	[2^3] = "info",
-	[2^4] = "debug"
+	[METALOG_LEVEL_NONE]  = "none",
+	[METALOG_LEVEL_FATAL] = "fatal",
+	[METALOG_LEVEL_ERROR] = "error",
+	[METALOG_LEVEL_WARN]  = "warn",
+	[METALOG_LEVEL_INFO]  = "info",
+	[METALOG_LEVEL_DEBUG] = "debug"
 }
 
 local function getLevelName (level)
@@ -75,24 +75,22 @@ end
 
 -- logging backend management
 
-local function getLoggingSink (name)
-	assertType ("name", name, "string")
-
-	return _metalogEnv.sinks and _metalogEnv.sinks [name]
+local function getLoggingSink (id)
+	assertType ("id", id, "string")
+	return _metalogEnv.sinks and _metalogEnv.sinks [id]
 end
 
-local function registerLoggingSink (name, callback)
-	assertType ("name", name, "string")
+local function registerLoggingSink (id, callback)
+	assertType ("id", id, "string")
 	assertType ("callback", callback, "function")
-
 	_metalogEnv.sinks = _metalogEnv.sinks or {}
-	_metalogEnv.sinks [name] = callback
+	_metalogEnv.sinks [id] = callback
 end
 
-local function unregisterLoggingSink (name)
-	assertType ("name", name, "string")
+local function unregisterLoggingSink (id)
+	assertType ("id", id, "string")
 	if _metalogEnv.sinks then
-		_metalogEnv.sinks [name] = nil
+		_metalogEnv.sinks [id] = nil
 	end
 end
 
@@ -130,30 +128,30 @@ local function logWarn  (id, channel, ...) return log (id, channel, METALOG_LEVE
 local function logInfo  (id, channel, ...) return log (id, channel, METALOG_LEVEL_INFO,  ...) end
 local function logDebug (id, channel, ...) return log (id, channel, METALOG_LEVEL_DEBUG, ...) end
 
-local function logFormat      (id, channel, level, ...) return log      (id, channel, level, string.format (...)) end
-local function logFatalFormat (id, channel,        ...) return logFatal (id, channel,        string.format (...)) end
-local function logErrorFormat (id, channel,        ...) return logError (id, channel,        string.format (...)) end
-local function logWarnFormat  (id, channel,        ...) return logWarn  (id, channel,        string.format (...)) end
-local function logInfoFormat  (id, channel,        ...) return logInfo  (id, channel,        string.format (...)) end
-local function logDebugFormat (id, channel,        ...) return logDebug (id, channel,        string.format (...)) end
+local function logFormat      (id, channel, level, message, ...) return log      (id, channel, level, string.format (message, ...)) end
+local function logFatalFormat (id, channel,        message, ...) return logFatal (id, channel,        string.format (message, ...)) end
+local function logErrorFormat (id, channel,        message, ...) return logError (id, channel,        string.format (message, ...)) end
+local function logWarnFormat  (id, channel,        message, ...) return logWarn  (id, channel,        string.format (message, ...)) end
+local function logInfoFormat  (id, channel,        message, ...) return logInfo  (id, channel,        string.format (message, ...)) end
+local function logDebugFormat (id, channel,        message, ...) return logDebug (id, channel,        string.format (message, ...)) end
 
 -- OO / metatable things
 
 local META_LOGGER = {
 	__index = function (_, key)
-		if     key == 'log'   then return function (logger, ...) return log      (logger.id, logger.channel, ...) end
+		if     key == 'log'   then return function (logger, level, ...) return log (logger.id, logger.channel, level, ...) end
 		elseif key == 'fatal' then return function (logger, ...) return logFatal (logger.id, logger.channel, ...) end
 		elseif key == 'error' then return function (logger, ...) return logError (logger.id, logger.channel, ...) end
 		elseif key == 'warn'  then return function (logger, ...) return logWarn  (logger.id, logger.channel, ...) end
 		elseif key == 'info'  then return function (logger, ...) return logInfo  (logger.id, logger.channel, ...) end
 		elseif key == 'debug' then return function (logger, ...) return logDebug (logger.id, logger.channel, ...) end
 
-		elseif key == 'logFormat'   then return function (logger, ...) return logFormat      (logger.id, logger.channel, ...) end
-		elseif key == 'fatalFormat' then return function (logger, ...) return logFatalFormat (logger.id, logger.channel, ...) end
-		elseif key == 'errorFormat' then return function (logger, ...) return logErrorFormat (logger.id, logger.channel, ...) end
-		elseif key == 'warnFormat'  then return function (logger, ...) return logWarnFormat  (logger.id, logger.channel, ...) end
-		elseif key == 'infoFormat'  then return function (logger, ...) return logInfoFormat  (logger.id, logger.channel, ...) end
-		elseif key == 'debugFormat' then return function (logger, ...) return logDebugFormat (logger.id, logger.channel, ...) end
+		elseif key == 'logFormat'   then return function (logger, level, message, ...) return logFormat      (logger.id, logger.channel, level, message, ...) end
+		elseif key == 'fatalFormat' then return function (logger, message, ...) return logFatalFormat (logger.id, logger.channel, message, ...) end
+		elseif key == 'errorFormat' then return function (logger, message, ...) return logErrorFormat (logger.id, logger.channel, message, ...) end
+		elseif key == 'warnFormat'  then return function (logger, message, ...) return logWarnFormat  (logger.id, logger.channel, message, ...) end
+		elseif key == 'infoFormat'  then return function (logger, message, ...) return logInfoFormat  (logger.id, logger.channel, message, ...) end
+		elseif key == 'debugFormat' then return function (logger, message, ...) return logDebugFormat (logger.id, logger.channel, message, ...) end
 		end
 	end
 }
