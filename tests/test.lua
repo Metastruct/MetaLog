@@ -18,8 +18,7 @@ require ('metalog')
 
 function lu.assertIsLessThan (a, b)
 	if not (a < b) then
-		a, b = lu.private.prettystrPairs (a, b)
-		return lu.fail (string.format ("expected: %s < %s", a, b))
+		return lu.fail (string.format ("expected: %s < %s", lu.private.prettystrPairs (a, b)))
 	end
 end
 
@@ -48,12 +47,12 @@ TestLevelInterface = {}
 	end
 
 	function TestLevelInterface.testLevelNames ()
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_NONE),  "none")
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_FATAL), "fatal")
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_ERROR), "error")
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_WARN),  "warn")
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_INFO),  "info")
-		lu.assertEquals (metalog.getLevelName (METALOG_LEVEL_DEBUG), "debug")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_NONE),  "none")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_FATAL), "fatal")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_ERROR), "error")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_WARN),  "warn")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_INFO),  "info")
+		lu.assertIs (metalog.getLevelName (METALOG_LEVEL_DEBUG), "debug")
 	end
 
 -- TestSinkInterface
@@ -117,7 +116,7 @@ TestLoggingStatic = {}
 	end
 
 	local function testCaseForLogStatic (testLevel, testChannel)
-		local received = {}
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
@@ -159,7 +158,7 @@ TestLoggingStatic = {}
 	function TestLoggingStatic.testLogDebugInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStatic, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
 
 	local function testCaseForLevelStatic (func, expectedLevel, testChannel)
-		local received = {}
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
@@ -195,7 +194,7 @@ TestLoggingStatic = {}
 	function TestLoggingStatic.testDebugInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelStatic, metalog.debug, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
 
 	local function testCaseForLogStaticFormat (testLevel, testChannel)
-		local received = {}
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
@@ -237,7 +236,7 @@ TestLoggingStatic = {}
 	function TestLoggingStatic.testLogDebugFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLogStaticFormat, METALOG_LEVEL_DEBUG, NOT_A_STRING) end
 
 	local function testCaseForLevelStaticFormat (func, expectedLevel, testChannel)
-		local received = {}
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
@@ -278,7 +277,7 @@ TestLoggingObject = {}
 	end
 
 	local function testCaseForLevelObject (method, expectedLevel, testChannel)
-		local received = {}
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
@@ -310,19 +309,19 @@ TestLoggingObject = {}
 
 	function TestLoggingObject.testInvalidChannel () lu.assertErrorMsgContains ('expected optional string', metalog, "test:id", NOT_A_STRING) end
 
-	local function testCaseForLevelObjectFormat (method, expectedLevel)
-		local received = {}
+	local function testCaseForLevelObjectFormat (method, expectedLevel, testChannel)
+		local received
 		metalog.registerLoggingSink ("testing", function (id, channel, level, ...)
 			received = {id=id, channel=channel, level=level, ...}
 		end)
 
 		local payload = { math.random(), math.random(), "this one should be ignored" }
 
-		local logger = metalog ("test:id")
+		local logger = metalog ("test:id", testChannel)
 		logger[method] (logger, "random numbers: %f %f", table.unpack (payload))
 
 		lu.assertIs (received.id, "test:id")
-		lu.assertIsNil (received.channel)
+		lu.assertIs (received.channel, testChannel)
 		lu.assertIs (received.level, expectedLevel)
 		lu.assertIs (received[1], string.format ("random numbers: %f %f", table.unpack (payload)))
 		lu.assertIsNil (received[2])
@@ -334,6 +333,12 @@ TestLoggingObject = {}
 	function TestLoggingObject.testWarnFormat  () return testCaseForLevelObjectFormat ("warnFormat",  METALOG_LEVEL_WARN)  end
 	function TestLoggingObject.testInfoFormat  () return testCaseForLevelObjectFormat ("infoFormat",  METALOG_LEVEL_INFO)  end
 	function TestLoggingObject.testDebugFormat () return testCaseForLevelObjectFormat ("debugFormat", METALOG_LEVEL_DEBUG) end
+
+	function TestLoggingObject.testFatalFormatChannel () return testCaseForLevelObjectFormat ("fatalFormat", METALOG_LEVEL_FATAL, "test_channel") end
+	function TestLoggingObject.testErrorFormatChannel () return testCaseForLevelObjectFormat ("errorFormat", METALOG_LEVEL_ERROR, "test_channel") end
+	function TestLoggingObject.testWarnFormatChannel  () return testCaseForLevelObjectFormat ("warnFormat",  METALOG_LEVEL_WARN,  "test_channel") end
+	function TestLoggingObject.testInfoFormatChannel  () return testCaseForLevelObjectFormat ("infoFormat",  METALOG_LEVEL_INFO,  "test_channel") end
+	function TestLoggingObject.testDebugFormatChannel () return testCaseForLevelObjectFormat ("debugFormat", METALOG_LEVEL_DEBUG, "test_channel") end
 
 TestConsolePrinter = {}
 	function TestConsolePrinter.setUp ()
@@ -377,7 +382,7 @@ TestConsolePrinter = {}
 		local ml_console_printer = dofile ("lua/metalog_handlers/ml_console_printer.lua")
 
 		local old_print = print
-		local received = {}
+		local received
 
 		print = function (...) received = {...} end -- luacheck: ignore
 		ml_console_printer ("test:id", nil, METALOG_LEVEL_INFO, "test message")
