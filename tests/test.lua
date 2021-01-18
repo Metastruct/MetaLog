@@ -340,6 +340,12 @@ TestLoggingObject = {}
 	function TestLoggingObject.testInfoFormatChannel  () return testCaseForLevelObjectFormat ("infoFormat",  METALOG_LEVEL_INFO,  "test_channel") end
 	function TestLoggingObject.testDebugFormatChannel () return testCaseForLevelObjectFormat ("debugFormat", METALOG_LEVEL_DEBUG, "test_channel") end
 
+	function TestLoggingObject.testFatalFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelObjectFormat, "fatalFormat", METALOG_LEVEL_FATAL, NOT_A_STRING) end
+	function TestLoggingObject.testErrorFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelObjectFormat, "errorFormat", METALOG_LEVEL_ERROR, NOT_A_STRING) end
+	function TestLoggingObject.testWarnFormatInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelObjectFormat, "warnFormat",  METALOG_LEVEL_WARN,  NOT_A_STRING) end
+	function TestLoggingObject.testInfoFormatInvalidChannel  () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelObjectFormat, "infoFormat",  METALOG_LEVEL_INFO,  NOT_A_STRING) end
+	function TestLoggingObject.testDebugFormatInvalidChannel () lu.assertErrorMsgContains ('expected optional string', testCaseForLevelObjectFormat, "debugFormat", METALOG_LEVEL_DEBUG, NOT_A_STRING) end
+
 TestConsolePrinter = {}
 	function TestConsolePrinter.setUp ()
 		_G.__CONSOLE_PRINTER_NONE = false
