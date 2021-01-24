@@ -45,7 +45,7 @@ local COLORS_BY_LEVEL = {
 	[2^4] = COLOR_DEBUG
 }
 
-return function (id, channel, level, ...)
+local function impl (func, addNewline, id, channel, level, ...)
 	-- map the convar setting to one of the supported log levels, default to INFO
 
 	local logLevel = cLogLevel:GetString():gsub ("[^%a]", ""):upper()
@@ -64,6 +64,14 @@ return function (id, channel, level, ...)
 			COLOR_CHANNEL_SEPARATOR, channel and "/" or "", COLOR_CHANNEL, channel or "", COLOR_BRACKETS, ":",
 			COLORS_BY_LEVEL [level] or COLOR_DEBUG, metalog.getLevelName (level),
 			COLOR_BRACKETS, "] ")
-		print (...)
+		func (...)
+		if addNewline then
+			print()
+		end
 	end
 end
+
+return {
+	onMessage = function (...) return impl (print, false, ...) end,
+	onColorMessage = function (...) return impl (MsgC, true, ...) end
+}

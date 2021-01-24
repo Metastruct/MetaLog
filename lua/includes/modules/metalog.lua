@@ -80,11 +80,22 @@ local function getLoggingSink (id)
 	return _metalogEnv.sinks and _metalogEnv.sinks [id]
 end
 
-local function registerLoggingSink (id, callback)
+local function registerLoggingSink (id, sink)
 	assertType ("id", id, "string")
-	assertType ("callback", callback, "function")
+	assertType ("sink", sink, "table")
+	assertType ("sink.onMessage", sink.onMessage, "function")
+	if sink.onColorMessage ~= nil then
+		assertType ("sink.onColorMessage", sink.onColorMessage, "function", "optional function")
+	end
+	if sink.translateColorMessages ~= nil then
+		assertType ("sink.translateColorMessages", sink.translateColorMessages, "boolean", "optional boolean")
+	end
+	if not sink.onColorMessage and not sink.translateColorMessages then
+		error ("Invalid sink configuration: no onColorMessage implementation provided and translateColorMessages not specified."
+			.. " Sink must somehow be able to receive color messages!")
+	end
 	_metalogEnv.sinks = _metalogEnv.sinks or {}
-	_metalogEnv.sinks [id] = callback
+	_metalogEnv.sinks [id] = sink
 end
 
 local function unregisterLoggingSink (id)
@@ -100,9 +111,24 @@ local function unregisterLoggingSinks ()
 	end
 end
 
+-- helpers
+
+local colorKeys = { r = true, g = true, b = true, a = true }
+
+local function isColor (color)
+	if type (color) ~= "table" then return end
+	if IsColor and IsColor (color) then return true end
+	for k in next, color do
+		if not colorKeys [k] then
+			return false
+		end
+	end
+	return true
+end
+
 -- central internal logging interface
 
-local function log (id, channel, level, ...)
+local function Ilog (isColorMode, id, channel, level, ...)
 	assertType ("id", id, "string")
 	if channel ~= nil then
 		assertType ("channel", channel, "string", "optional string")
@@ -110,14 +136,42 @@ local function log (id, channel, level, ...)
 	assertLevel (level)
 
 	for sinkName, sink in next, _metalogEnv.sinks do
-		local ok, err = pcall (sink, id, channel, level, ...)
+		local ok, err
+
+		if isColorMode then
+			if sink.translateColorMessages then
+				local dataWithColorsStripped, i = {...}, 1
+				while i < #dataWithColorsStripped do
+					if isColor (dataWithColorsStripped [i]) then
+						table.remove (dataWithColorsStripped, i)
+					else
+						i = i + 1
+					end
+				end
+				ok, err = pcall (sink.onMessage, id, channel, level, unpack (dataWithColorsStripped))
+			else
+				ok, err = pcall (sink.onColorMessage, id, channel, level, ...)
+			end
+		else
+			ok, err = pcall (sink.onMessage, id, channel, level, ...)
+		end
+
 		if not ok then
 			_metalogEnv.sinks [sinkName] = nil
-			ml_console_printer ("MetaLog", "sinks", METALOG_LEVEL_WARN,
-				"Logging sink '%s' has errored and has been removed. The error was: %s",
-				sinkName, err)
+			ml_console_printer.onMessage ("MetaLog", "sinks", METALOG_LEVEL_WARN,
+				string.format ("Logging sink '%s' has errored and has been removed. The error was: %s",
+					sinkName, err)
+				)
 		end
 	end
+end
+
+local function log (...)
+	return Ilog (false, ...)
+end
+
+local function logColor (...)
+	return Ilog (true, ...)
 end
 
 -- per-level logging aliases
@@ -127,6 +181,12 @@ local function logError (id, channel, ...) return log (id, channel, METALOG_LEVE
 local function logWarn  (id, channel, ...) return log (id, channel, METALOG_LEVEL_WARN,  ...) end
 local function logInfo  (id, channel, ...) return log (id, channel, METALOG_LEVEL_INFO,  ...) end
 local function logDebug (id, channel, ...) return log (id, channel, METALOG_LEVEL_DEBUG, ...) end
+
+local function logFatalColor (id, channel, ...) return logColor (id, channel, METALOG_LEVEL_FATAL, ...) end
+local function logErrorColor (id, channel, ...) return logColor (id, channel, METALOG_LEVEL_ERROR, ...) end
+local function logWarnColor  (id, channel, ...) return logColor (id, channel, METALOG_LEVEL_WARN,  ...) end
+local function logInfoColor  (id, channel, ...) return logColor (id, channel, METALOG_LEVEL_INFO,  ...) end
+local function logDebugColor (id, channel, ...) return logColor (id, channel, METALOG_LEVEL_DEBUG, ...) end
 
 local function logFormat      (id, channel, level, message, ...) return log      (id, channel, level, string.format (message, ...)) end
 local function logFatalFormat (id, channel,        message, ...) return logFatal (id, channel,        string.format (message, ...)) end
@@ -146,7 +206,14 @@ local META_LOGGER = {
 		elseif key == 'info'  then return function (logger, ...) return logInfo  (logger.id, logger.channel, ...) end
 		elseif key == 'debug' then return function (logger, ...) return logDebug (logger.id, logger.channel, ...) end
 
-		elseif key == 'logFormat'   then return function (logger, level, message, ...) return logFormat      (logger.id, logger.channel, level, message, ...) end
+		elseif key == 'logColor'   then return function (logger, level, ...) return logColor (logger.id, level, logger.channel, ...) end
+		elseif key == 'fatalColor' then return function (logger, ...) return logFatalColor (logger.id, logger.channel, ...) end
+		elseif key == 'errorColor' then return function (logger, ...) return logErrorColor (logger.id, logger.channel, ...) end
+		elseif key == 'warnColor'  then return function (logger, ...) return logWarnColor  (logger.id, logger.channel, ...) end
+		elseif key == 'infoColor'  then return function (logger, ...) return logInfoColor  (logger.id, logger.channel, ...) end
+		elseif key == 'debugColor' then return function (logger, ...) return logDebugColor (logger.id, logger.channel, ...) end
+
+		elseif key == 'logFormat'   then return function (logger, level, message, ...) return logFormat (logger.id, logger.channel, level, message, ...) end
 		elseif key == 'fatalFormat' then return function (logger, message, ...) return logFatalFormat (logger.id, logger.channel, message, ...) end
 		elseif key == 'errorFormat' then return function (logger, message, ...) return logErrorFormat (logger.id, logger.channel, message, ...) end
 		elseif key == 'warnFormat'  then return function (logger, message, ...) return logWarnFormat  (logger.id, logger.channel, message, ...) end
@@ -181,12 +248,21 @@ metalog = setmetatable ({
 	unregisterLoggingSink  = unregisterLoggingSink,
 	unregisterLoggingSinks = unregisterLoggingSinks,
 
+	isColor = isColor,
+
 	log   = log,
 	fatal = logFatal,
 	error = logError,
 	warn  = logWarn,
 	info  = logInfo,
 	debug = logDebug,
+
+	logColor   = logColor,
+	fatalColor = logFatalColor,
+	errorColor = logErrorColor,
+	warnColor  = logWarnColor,
+	infoColor  = logInfoColor,
+	debugColor = logDebugColor,
 
 	logFormat   = logFormat,
 	fatalFormat = logFatalFormat,

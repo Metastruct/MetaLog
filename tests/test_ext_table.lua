@@ -3,3 +3,13 @@ function table.Empty (tab)
 		tab [k] = nil
 	end
 end
+
+function table.GetKeys (tab)
+	local keys = {}
+
+	for k in next, tab do
+		table.insert (keys, k)
+	end
+
+	return keys
+end

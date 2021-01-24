@@ -26,5 +26,6 @@ return {
 			b = math.min (tonumber (b) or 0, 255),
 			a = math.min (tonumber (a) or 0, 255)
 		}
-	end
+	end,
+	unpack = table.unpack
 }
