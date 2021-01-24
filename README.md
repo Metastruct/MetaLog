@@ -17,7 +17,23 @@ The default logger can be turned off or even removed and replaced with a more su
 Examples include adding an additional Discord logging sink to send log messages to one or more Discord channels or to implement silly things such as making an NPC say all `info` log messages using text-to-speech.
 
 The possibilities are endless, really.
-## Usage
+
+## Usage Example
+
+```Lua
+require ("metalog")
+
+local logger = metalog ("myScriptName")
+logger:info ("This is a piece of information.")
+logger:warn ("Entity(0) is, and will forever be, ", Entity (0))
+logger:error ("Something broke! This is not good.")
+
+local loggerA = metalog ("myScriptWithChannels", "categoryA")
+loggerA:debugFormat ("The secret is %d.", 123)
+loggerA:infoColor ("This text will be red: ", Color (255, 0, 0), "hello")
+```
+
+## Usage Guide
 
 1. Require metalog in your script.
 	```Lua
@@ -162,18 +178,3 @@ MetaLog currently ships with one default logging sink, the console printer.
 You can find it in `metalog_handlers/ml_console_printer.lua`. It contains a relatively trivial sink that prints log messages to the console using a `print` call. Colored messages are handled by simply switching from `print` to `MsgC` instead.
 
 The default sink's logging filter simply offers a convar-controllable log level threshold that does a greater-than-or-equal check against incoming log messages.
-
-## Example
-
-```Lua
-require ("metalog")
-
-local logger = metalog ("myScriptName")
-logger:info ("This is a piece of information.")
-logger:warn ("Entity(0) is, and will forever be, ", Entity (0))
-logger:error ("Something broke! This is not good.")
-
-local loggerA = metalog ("myScriptWithChannels", "categoryA")
-loggerA:debugFormat ("The secret is %d.", 123)
-loggerA:infoColor ("This text will be red: ", Color (255, 0, 0), "hello")
-```
