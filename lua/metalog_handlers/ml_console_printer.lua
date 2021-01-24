@@ -66,7 +66,7 @@ local function impl (func, addNewline, id, channel, level, ...)
 			COLOR_BRACKETS, "] ")
 		func (...)
 		if addNewline then
-			print()
+			print("")
 		end
 	end
 end
