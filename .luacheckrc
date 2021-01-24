@@ -9,10 +9,12 @@ read_globals = {
 	"METALOG_LEVEL_DEBUG",
 	"metalog",
 	"include",
+	"unpack",
+	"Color",
 	"CreateConVar",
 	table = {
 		fields = {
-			"Empty"
+			"Empty", "GetKeys"
 		}
 	}
 }
@@ -22,9 +24,14 @@ files ["tests/test_ext_table.lua"] = {
 	globals = {
 		table = {
 			fields = {
-				"Empty"
+				"Empty", "GetKeys"
 			}
 		}
+	}
+}
+files ["lua/includes/modules/metalog.lua"] = {
+	read_globals = {
+		"IsColor"
 	}
 }
 files ["tests/test_mock.lua"] = {
